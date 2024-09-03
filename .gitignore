@@ -1,2 +1,5 @@
 # ignore all pdf files while adding 
 *.pdf
+
+# ignore nested repositiories
+/kalman_filter/article_diff_kf
