@@ -10,14 +10,15 @@ A TUTORIAL ON KALMAN FILTER
 
 class system:
     
-    state = var = []
+    state = [] 
+    var = []
     
     def __init__(self, state, var):
         
-        for s,v in state,var:
+        for s,v in zip(state,var):
             self.state.append(s)
             self.var.append(v)
-        
-            
+    
+    def 
         
 
