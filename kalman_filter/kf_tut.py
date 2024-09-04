@@ -19,6 +19,7 @@ class system:
             self.state.append(s)
             self.var.append(v)
     
-    def 
+    def update(self, prev, z)
+        
         
 
