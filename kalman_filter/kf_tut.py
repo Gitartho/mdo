@@ -21,5 +21,5 @@ class system:
     
     def update(self, prev, z)
         
-        
+        n = 10
 
