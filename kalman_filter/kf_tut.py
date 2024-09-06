@@ -20,8 +20,8 @@ Acc = 50
 Vinit = 0.0
 Xinit = 0.0
 
-dt = 1
-Tend = 10
+dt = 0.01
+Tend = 40
 
 
 "######################## Initial values ############################"
@@ -64,6 +64,8 @@ acc_true_save = []
 while T < Tend:
     
     T += dt
+    
+    Acc = abs(Acc) * (-1) ** int(T)
     
     pos_predict_save.append(pos_predict)
     vel_predict_save.append(vel_predict)
@@ -117,7 +119,7 @@ while T < Tend:
 
 x = range(len(pos_estimate_save))
 #marker = ['-o', '-s', 'v', '-*']
-marker = ['-', '-', '--', '-']
+marker = ['-', '-.', '--', '-']
 plt.figure(dpi=150)
 
 plt.plot(x, pos_estimate_save, marker[0], label="Estimate")
@@ -142,9 +144,11 @@ plt.show()
 
 plt.figure(dpi=150)
 
-plt.plot(x, acc_estimate_save, marker[0], label="Estimate")
+plt.loglog(x, acc_estimate_save, marker[0], label="Estimate")
 #plt.plot(x, acc_predict_save, marker[1], label="Predicted")
 plt.plot(x, acc_true_save, marker[2], label="True")
+plt.yscale('symlog')
+plt.xscale('linear')
 
 plt.title("Graph of Accelaration vs. Time")
 plt.legend()
