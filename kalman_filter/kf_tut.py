@@ -16,7 +16,7 @@ process_noise_std = 1
 measurement_noise_std = 1
 pos_guess_std = 10
 
-Acc = 50
+Acc = 5
 Vinit = 0.0
 Xinit = 0.0
 
@@ -64,18 +64,18 @@ acc_true_save = []
 while T < Tend:
     
     T += dt
-    
+
     Acc = abs(Acc) * (-1) ** int(T)
     
     pos_predict_save.append(pos_predict)
     vel_predict_save.append(vel_predict)
     acc_predict_save.append(acc_predict)
     
-    acc_true = Acc + np.random.normal(0,process_noise_std)
+    acc_true = Acc + np.sqrt(dt)*np.random.normal(0,process_noise_std)
     vel_true = vel_true + dt * acc_true
     pos_true = pos_true + dt * vel_true
     
-    pos_measured = pos_true + np.random.normal(0,measurement_noise_std)
+    pos_measured = pos_true + np.sqrt(dt)*np.random.normal(0,measurement_noise_std)
     
     "--------------------------------------------------------"
     last_pos_estimate = pos_estimate
@@ -122,10 +122,12 @@ x = range(len(pos_estimate_save))
 marker = ['-', '-.', '--', '-']
 plt.figure(dpi=150)
 
-plt.plot(x, pos_estimate_save, marker[0], label="Estimate")
-plt.plot(x, pos_predict_save, marker[1], label="Predicted")
-plt.plot(x, pos_true_save, marker[2], label="True")
-plt.plot(x, pos_measured_save, marker[3], label="Measured")
+plt.plot(x, pos_measured_save, marker[3], label="Measured", linewidth=0.3, color='r')
+plt.plot(x, pos_estimate_save, marker[0], label="Estimate", color='b')
+plt.plot(x, pos_predict_save, marker[1], label="Predicted", color='g')
+plt.plot(x, pos_true_save, marker[2], label="True", color='y')
+
+
 
 plt.title("Graph of Position vs. Time")
 plt.legend()
@@ -144,11 +146,11 @@ plt.show()
 
 plt.figure(dpi=150)
 
-plt.loglog(x, acc_estimate_save, marker[0], label="Estimate")
+plt.plot(x, acc_estimate_save, marker[0], label="Estimate")
 #plt.plot(x, acc_predict_save, marker[1], label="Predicted")
 plt.plot(x, acc_true_save, marker[2], label="True")
-plt.yscale('symlog')
-plt.xscale('linear')
+#plt.yscale('symlog')
+#plt.xscale('linear')
 
 plt.title("Graph of Accelaration vs. Time")
 plt.legend()
