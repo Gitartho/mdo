@@ -25,7 +25,7 @@ df = 0.01 # For sensitivity calculations
 dt = 0.1
 Tend = 10 
 
-Case = 2
+Case = 1
 "######################### Initialize ############################"
 T = 0.0
 iteration = 0
