@@ -23,10 +23,7 @@ x_init = np.array([[0.], [0.]])
 
 df = 0.01 # For sensitivity calculations
 dt = 0.1
-Tend = 10
-
-index_I = 0
-index_J = 1
+Tend = 10 
 
 Case = 2
 "######################### Initialize ############################"
@@ -60,7 +57,10 @@ vel_estimate = [x[1][0]]
 time = [0]
 
 sens = np.zeros(F.shape)
-sens_save = [0]
+sens_save_00 = [0]
+sens_save_01 = [0]
+sens_save_10 = [0]
+sens_save_11 = [0]
 
 "######################## Main loop ################################"
 
@@ -96,10 +96,11 @@ while T < Tend:
             costm = np.sqrt((z - H @ (Fm @ x + acc*g))**2)
             
             sens[i][j] = 0.5*(costp[0][0] - costm[0][0])/df
-        
-            if i == index_I:
-                if j == index_J:
-                    sens_save.append(sens[i][j])
+            
+    sens_save_00.append(sens[0][0])
+    sens_save_01.append(sens[0][1])
+    sens_save_10.append(sens[1][0])
+    sens_save_11.append(sens[1][1])
      
     
     "------------------- State Update -----------------------"
@@ -147,8 +148,12 @@ plt.show()
 
 plt.figure(dpi=150)
  
-plt.plot(time, sens_save, color='r')
+plt.plot(time, sens_save_00, label="F[0][0]", color='r')
+plt.plot(time, sens_save_01, label="F[0][1]", color='b')
+plt.plot(time, sens_save_10, label="F[1][0]", color='g')
+plt.plot(time, sens_save_11, label="F[1][1]", color='y')
 
-plt.title("Sensitivity w.r.t. F[{}][{}]".format(index_I, index_J))
+plt.title("Sensitivity w.r.t. F vs time")
+plt.legend()
 plt.show()
 
