@@ -10,6 +10,7 @@ using predictions of the noisy process and uncertain measurements
 """
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 "########################## Parameters ##############################"
 process_noise_std = 10
@@ -84,6 +85,27 @@ while T < Tend:
     "-------------- Sensitivity calculation -----------------"
     # using finite difference to compute sensitivity of 
     # Cost function sqrt((z - Hx)**2) wrt elements of F
+    
+    
+    '''
+    
+    if iteration == 20:
+        cost = []
+        deltaF = np.arange(-2,2,0.01)
+        for dF0 in deltaF:
+            F0 = F*1 
+            F0[1][1] += dF0
+            cost.append(np.sqrt((z - H @ (F0 @ x + acc*g))**2)[0][0])
+        
+        plt.figure(dpi=150)
+        plt.plot(deltaF, cost)
+        plt.title("Graph of cost function wrt F[1][1]")
+        plt.xlabel("dF[i][j]")
+        plt.show()
+        
+        sys.exit()
+    
+    '''
     
     for i in range(F.shape[0]):
         for j in range(F.shape[1]):
