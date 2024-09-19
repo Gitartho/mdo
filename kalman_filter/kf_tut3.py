@@ -47,13 +47,13 @@ for temp in np.arange(0, Tend+dt, dt):
     acc_noise.append(np.random.normal(0,process_noise_std))
     z_noise.append(np.random.normal(0,measurement_noise_std))  
 
-"########################## Main Optimization Loop ############################"
 
-for dF in DF:
-
-    cost = 0.0
+def KF():
     
-    "######################### Initialize ############################"
+    global acc, acc_noise, z_noise, x_init, dt, Tend, Case 
+    global pos_guess_std, process_noise_std, measurement_noise_std
+
+    "--------------------- Initialize ------------------------"
     time_iter = 0
     T = 0.0
     
@@ -130,11 +130,7 @@ for dF in DF:
         P = F @ P @ np.transpose(F) + Q
     
     cost_save.append(cost)
-
-plt.figure(dpi=150)
-plt.plot(DF, cost_save)
-plt.title('Cost function plotted w.r.t change in F[{}][{}], t={}'.format(pertb_i, pertb_j, pertb_time))
-plt.show()   
-
+  
+ 
 #################################################################
 ############################### PLOT ############################
