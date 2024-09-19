@@ -9,8 +9,9 @@ And performing optimization
 """
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.optimize import minimize
 
-"########################## Parameters ##############################"
+########################## Parameters ##############################
 process_noise_std = 10
 measurement_noise_std = 10
 
@@ -23,22 +24,23 @@ x_init = np.array([[0.], [0.]])
 dt = 0.1
 Tend = 10.0
 
-Case = 1
+Case = 2
+plot = True
 
-"################### Optimization parameters ########################"
+################### Optimization parameters ########################
 
-pertb_time = 5.0 # time at which we want to perturb the F matrix
+pertb_time = 5.0
 pertb_i = 0
-pertb_j = 0 # indices at which we want to purturn the F matrix
+pertb_j = 0
 
-cost_X_limit = 0.2 # cost function will be plotted in this range [-x, x]
-cost_stepsize = 0.01 
+cost_X_limit = 4 # cost function will be plotted in this range [-x, x]
 
-cost_save = []
-DF = np.arange(-cost_X_limit, cost_X_limit+cost_stepsize, cost_stepsize)
+opt_iter_lim = 10 # Optimization iterations
 
-"------------------------------------------------------------------------------"
-"Generate the random data in advanced for consistancy bw optimization iterations"
+u_guess = 0.0
+
+"---------------------------------------------------------------------"
+"Generate the random data in advanced for consistancy"
 
 acc_noise = []
 z_noise = []
@@ -48,10 +50,14 @@ for temp in np.arange(0, Tend+dt, dt):
     z_noise.append(np.random.normal(0,measurement_noise_std))  
 
 
-def KF():
+#===================================================================#
+##################### Kalman Filter Function ########################
+def KF(FF):
     
-    global acc, acc_noise, z_noise, x_init, dt, Tend, Case 
+    global acc, acc_noise, z_noise, x_init, dt, Tend, Case, plot
     global pos_guess_std, process_noise_std, measurement_noise_std
+    
+    cost = 0.0
 
     "--------------------- Initialize ------------------------"
     time_iter = 0
@@ -62,7 +68,7 @@ def KF():
     x_true = x_init
     x = x_init
 
-    F = np.array([[1, dt], [0, 1]])
+    Ftrue = np.array([[1, dt], [0, 1]])
     g = np.array([[0.5 * dt**2], [dt]])
     H = np.array([[1.,0]])
 
@@ -83,7 +89,7 @@ def KF():
     vel_estimate = [x[1][0]]
     time = [0]
     
-    "####################### Main Time Loop #####################"
+    ####################### Main Time Loop #####################
     while T < Tend:
         
         T += dt
@@ -96,17 +102,14 @@ def KF():
                 acc = -abs(acc)
         
         acc_true = acc + acc_noise[time_iter-1]
-        x_true = F @ x_true + acc_true * g
+        x_true = Ftrue @ x_true + acc_true * g
+        F = FF[time_iter-1]*1
         
         z = H @ x_true + z_noise[time_iter-1]
         
         "----------------- Compute Cost Function ----------------"
-        
-        F0 = F*1
-        if(time_iter == pertb_time/dt):
-            F0[pertb_i][pertb_j] += dF
 
-        cost += np.sqrt((z - H @ (F0 @ x + acc*g))**2)[0][0] / (2*cost_X_limit/cost_stepsize)
+        cost += np.sqrt((z - H @ (F @ x + acc*g))**2)[0][0]
   
         "------------------- State Update -----------------------"
         L = H @ P @ np.transpose(H) + R
@@ -128,9 +131,43 @@ def KF():
         
         x = F @ x + acc * g
         P = F @ P @ np.transpose(F) + Q
+        
+    if plot:
+        plt.figure(dpi=150)
+
+        plt.plot(time, pos_estimate, label="Estimate", color='r')
+        plt.plot(time, pos_true, label="True", color='b')
+        plt.plot(time, pos_measured, '-.', label="Measured", color='g')
+
+        plt.title("Graph of Position vs. Time")
+        plt.legend()
+        plt.show()
+        plot = False
     
-    cost_save.append(cost)
-  
- 
-#################################################################
-############################### PLOT ############################
+    return cost
+
+
+#===================================================================#
+##################### Optimization Section ##########################
+
+def objective(u):
+    
+    global Tend, dt
+    
+    FF = []
+    for i in range(int(Tend/dt)+1):
+        F = np.array([[1, dt], [0, 1]])
+        if i == pertb_time/dt: 
+            F[pertb_i][pertb_j] = u[0]
+        FF.append(F)
+    
+    return KF(FF)
+        
+u_bound = [[-cost_X_limit, cost_X_limit]]
+u0 = [u_guess]
+
+solution = minimize(objective, u0, method='SLSQP', bounds=u_bound)
+print(solution)
+
+plot = True
+objective(solution.x)
