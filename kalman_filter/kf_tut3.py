@@ -9,7 +9,10 @@ And performing optimization
 """
 import numpy as np
 import matplotlib.pyplot as plt
+import niceplots
 from scipy.optimize import minimize
+
+plt.style.use(niceplots.get_style())
 
 ########################## Parameters ##############################
 process_noise_std = 10
@@ -133,15 +136,20 @@ def KF(FF):
         P = F @ P @ np.transpose(F) + Q
         
     if plot:
-        plt.figure(dpi=150)
+        
+        fig, ax = plt.subplots()
+        
+        ax.figure(dpi=400)
 
-        plt.plot(time, pos_estimate, label="Estimate", color='r')
-        plt.plot(time, pos_true, label="True", color='b')
-        plt.plot(time, pos_measured, '-.', label="Measured", color='g')
+        ax.plot(time, pos_estimate, label="Estimate", color='r')
+        ax.plot(time, pos_true, label="True", color='b')
+        ax.plot(time, pos_measured, '-.', label="Measured", color='g')
 
-        plt.title("Graph of Position vs. Time")
-        plt.legend()
-        plt.show()
+        ax.set_xlabel("t")
+        ax.set_ylabel("$\sigma$", rotation="horizontal", ha="right")
+        niceplots.adjust_spines(ax)
+        niceplots.label_line_ends(ax)
+
         plot = False
     
     return cost
