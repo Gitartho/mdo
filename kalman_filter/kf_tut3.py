@@ -179,7 +179,7 @@ fig, ax = plt.subplots()
 ax.plot(U, cost_func, color='r')
 ax.set_xlim(-cost_X_limit, cost_X_limit)
 ax.set_xlabel(f'F[{pertb_i}][{pertb_j}]')
-ax.set_ylabel("Cost Function", rotation="vertical", ha="right", va="center")
+ax.set_ylabel("Cost Function", rotation="horizontal", ha="right", va="center")
 # niceplots.adjust_spines(ax)
 # niceplots.label_line_ends(ax)
  
