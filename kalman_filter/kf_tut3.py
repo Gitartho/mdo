@@ -11,6 +11,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import niceplots
 from scipy.optimize import minimize
+import niceplots
+
+plt.style.use(niceplots.get_style())
 
 ########################## Parameters ##############################
 process_noise_std = 10
@@ -37,6 +40,7 @@ pertb_j = 0
 cost_X_limit = 10 # cost function will be plotted in this range [-x, x]
 cost_step = 0.1
 opt_iter_lim = 10 # Optimization iterations
+
 
 u_guess = 0.0
 
@@ -167,6 +171,7 @@ def objective(u):
             F[pertb_i][pertb_j] = u[0]
         FF.append(F)
     
+<<<<<<< HEAD
     return KF(FF)
 
 U = np.arange(-cost_X_limit, cost_X_limit, cost_step)
@@ -195,3 +200,34 @@ ax.set_ylabel("Cost Function", rotation="horizontal", ha="right", va="center")
 
 # plot = True
 # objective(solution.x)
+=======
+    return KF(FF)/(Tend/dt)
+
+# cost_func = []
+# U = np.arange(-cost_X_limit, cost_X_limit, cost_step)
+# F = np.array([[1, dt], [0, 1]])
+# for u in U:
+#     cost_func.append(objective([F[pertb_i][pertb_j]+u]))
+
+# plt.figure(dpi=150)
+# plt.plot(U, cost_func, color='r')
+
+# plt.show()
+# plot = False
+
+
+plot = True
+objective([-20])
+
+        
+# u_bound = [[-cost_X_limit, cost_X_limit]]
+# u0 = [u_guess]
+
+# solution = minimize(objective, u0, method='SLSQP', bounds=u_bound)
+# print(solution)
+
+# plot = True
+# objective(solution.x)
+
+
+>>>>>>> 9634006d9015e80f7cd817ff937447d1ce6b9bfc
