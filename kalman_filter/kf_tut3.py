@@ -10,6 +10,9 @@ And performing optimization
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize
+import niceplots
+
+plt.style.use(niceplots.get_style())
 
 ########################## Parameters ##############################
 process_noise_std = 10
@@ -25,7 +28,7 @@ dt = 0.1
 Tend = 10.0
 
 Case = 2
-plot = True
+plot = False
 
 ################### Optimization parameters ########################
 
@@ -34,8 +37,9 @@ pertb_i = 0
 pertb_j = 0
 
 cost_X_limit = 4 # cost function will be plotted in this range [-x, x]
+cost_step = 0.1
 
-opt_iter_lim = 10 # Optimization iterations
+opt_iter_lim = 30 # Optimization iterations
 
 u_guess = 0.0
 
@@ -106,10 +110,6 @@ def KF(FF):
         F = FF[time_iter-1]*1
         
         z = H @ x_true + z_noise[time_iter-1]
-        
-        "----------------- Compute Cost Function ----------------"
-
-        cost += np.sqrt((z - H @ (F @ x + acc*g))**2)[0][0]
   
         "------------------- State Update -----------------------"
         L = H @ P @ np.transpose(H) + R
@@ -118,6 +118,10 @@ def KF(FF):
          
         x = x + K @ (z - H @ x)
         P = (I - K @ H) @ P
+        
+        "----------------- Compute Cost Function ----------------"
+
+        cost += np.sqrt((z - H @ x)**2)[0][0]
         
         "-------------------- Save Data --------------------------"
         pos_estimate.append(x[0][0])
@@ -161,13 +165,32 @@ def objective(u):
             F[pertb_i][pertb_j] = u[0]
         FF.append(F)
     
-    return KF(FF)
-        
-u_bound = [[-cost_X_limit, cost_X_limit]]
-u0 = [u_guess]
+    return KF(FF)/(Tend/dt)
 
-solution = minimize(objective, u0, method='SLSQP', bounds=u_bound)
-print(solution)
+# cost_func = []
+# U = np.arange(-cost_X_limit, cost_X_limit, cost_step)
+# F = np.array([[1, dt], [0, 1]])
+# for u in U:
+#     cost_func.append(objective([F[pertb_i][pertb_j]+u]))
+
+# plt.figure(dpi=150)
+# plt.plot(U, cost_func, color='r')
+
+# plt.show()
+# plot = False
+
 
 plot = True
-objective(solution.x)
+objective([-20])
+
+        
+# u_bound = [[-cost_X_limit, cost_X_limit]]
+# u0 = [u_guess]
+
+# solution = minimize(objective, u0, method='SLSQP', bounds=u_bound)
+# print(solution)
+
+# plot = True
+# objective(solution.x)
+
+
