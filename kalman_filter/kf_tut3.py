@@ -12,8 +12,6 @@ import matplotlib.pyplot as plt
 import niceplots
 from scipy.optimize import minimize
 
-plt.style.use(niceplots.get_style())
-
 ########################## Parameters ##############################
 process_noise_std = 10
 measurement_noise_std = 10
@@ -28,7 +26,7 @@ dt = 0.1
 Tend = 10.0
 
 Case = 2
-plot = True
+plot = False
 
 ################### Optimization parameters ########################
 
@@ -36,8 +34,8 @@ pertb_time = 5.0
 pertb_i = 0
 pertb_j = 0
 
-cost_X_limit = 4 # cost function will be plotted in this range [-x, x]
-
+cost_X_limit = 10 # cost function will be plotted in this range [-x, x]
+cost_step = 0.1
 opt_iter_lim = 10 # Optimization iterations
 
 u_guess = 0.0
@@ -109,10 +107,6 @@ def KF(FF):
         F = FF[time_iter-1]*1
         
         z = H @ x_true + z_noise[time_iter-1]
-        
-        "----------------- Compute Cost Function ----------------"
-
-        cost += np.sqrt((z - H @ (F @ x + acc*g))**2)[0][0]
   
         "------------------- State Update -----------------------"
         L = H @ P @ np.transpose(H) + R
@@ -121,6 +115,10 @@ def KF(FF):
          
         x = x + K @ (z - H @ x)
         P = (I - K @ H) @ P
+        
+        "----------------- Compute Cost Function ----------------"
+
+        cost += np.sqrt((z - H @ x)**2)[0][0]
         
         "-------------------- Save Data --------------------------"
         pos_estimate.append(x[0][0])
@@ -152,7 +150,7 @@ def KF(FF):
 
         plot = False
     
-    return cost
+    return cost/(Tend/dt)
 
 
 #===================================================================#
@@ -170,12 +168,30 @@ def objective(u):
         FF.append(F)
     
     return KF(FF)
+
+U = np.arange(-cost_X_limit, cost_X_limit, cost_step)
+cost_func = []
+for u in U:
+    cost_func.append(objective([u]))
+
+plt.style.use(niceplots.get_style())
+fig, ax = plt.subplots()
+ax.plot(U, cost_func, color='r')
+ax.set_xlim(-cost_X_limit, cost_X_limit)
+ax.set_xlabel(f'F[{pertb_i}][{pertb_j}]')
+ax.set_ylabel("Cost Function", rotation="vertical", ha="right", va="center")
+# niceplots.adjust_spines(ax)
+# niceplots.label_line_ends(ax)
+ 
+
+    
+
         
-u_bound = [[-cost_X_limit, cost_X_limit]]
-u0 = [u_guess]
+# u_bound = [[-cost_X_limit, cost_X_limit]]
+# u0 = [u_guess]
 
-solution = minimize(objective, u0, method='SLSQP', bounds=u_bound)
-print(solution)
+# solution = minimize(objective, u0, method='SLSQP', bounds=u_bound)
+# print(solution)
 
-plot = True
-objective(solution.x)
+# plot = True
+# objective(solution.x)
