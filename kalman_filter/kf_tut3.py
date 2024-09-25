@@ -35,7 +35,7 @@ plot = True
 
 pertb_time = 5.0
 pertb_i = 0
-pertb_j = 1
+pertb_j = 0
 
 cost_X_limit = 40 # cost function will be plotted in this range [-x, x]
 cost_step = 0.1
@@ -81,8 +81,10 @@ def KF(FF):
     vel_var = pos_var / dt**2
     acc_var = process_noise_std**2
 
-    P = np.array([[pos_var, pos_var/dt], [pos_var/dt, vel_var]])
-    Q = np.array([[dt**2, dt**3], [dt**3, dt**4]]) * acc_var
+    # P = np.array([[pos_var, pos_var/dt], [pos_var/dt, vel_var]])
+    P = np.eye(2)  # Initial error covariance matrix
+    # Q = np.array([[dt**2, dt**3], [dt**3, dt**4]]) * acc_var
+    Q = np.array([[dt ** 4 / 4, dt ** 3 / 2], [dt ** 3 / 2, dt ** 2]]) * process_noise_std ** 2  # Process noise covariance
     R = np.array([[measurement_noise_std**2]])
 
     I = np.identity(P.shape[0])
@@ -177,7 +179,7 @@ def objective(u):
         
     return KF(FF)
 
-if 1:
+if 0:
     U = np.arange(-cost_X_limit, cost_X_limit, cost_step)
     cost_func = []
     for u in U:
@@ -203,6 +205,6 @@ if 0:
     plot = True
     objective(solution.x)
     
-if 0:
+if 1:
     plot = True
-    objective([-2])
+    objective([1])
