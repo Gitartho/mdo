@@ -29,15 +29,15 @@ dt = 0.1
 Tend = 10.0
 
 Case = 2
-plot = False
+plot = True
 
 ################### Optimization parameters ########################
 
 pertb_time = 5.0
 pertb_i = 0
-pertb_j = 0
+pertb_j = 1
 
-cost_X_limit = 10 # cost function will be plotted in this range [-x, x]
+cost_X_limit = 40 # cost function will be plotted in this range [-x, x]
 cost_step = 0.1
 opt_iter_lim = 10 # Optimization iterations
 
@@ -86,12 +86,14 @@ def KF(FF):
     R = np.array([[measurement_noise_std**2]])
 
     I = np.identity(P.shape[0])
-
+    
+    pos_predict = [x[0][0]]
     pos_estimate = [x[0][0]]
     pos_measured = [x_init[0][0]]
     pos_true = [x_init[0][0]]
     vel_true = [x_init[1][0]]
     vel_estimate = [x[1][0]]
+    
     time = [0]
     
     ####################### Main Time Loop #####################
@@ -137,20 +139,22 @@ def KF(FF):
         x = F @ x + acc * g
         P = F @ P @ np.transpose(F) + Q
         
+        pos_predict.append(x[0][0])
+        
     if plot:
         
-        fig, ax = plt.subplots()
-        
-        ax.figure(dpi=400)
+        fig, ax = plt.subplots(dpi=400)
 
         ax.plot(time, pos_estimate, label="Estimate", color='r')
         ax.plot(time, pos_true, label="True", color='b')
         ax.plot(time, pos_measured, '-.', label="Measured", color='g')
+        # ax.plot(time, pos_predict, '--', label='predicted', color='black')
 
-        ax.set_xlabel("t")
-        ax.set_ylabel("$\sigma$", rotation="horizontal", ha="right")
+        ax.set_xlabel("time")
+        ax.set_ylabel("x", rotation="horizontal", ha="right")
         niceplots.adjust_spines(ax)
-        niceplots.label_line_ends(ax)
+        # niceplots.label_line_ends(ax)
+        plt.legend()
 
         plot = False
     
@@ -170,64 +174,35 @@ def objective(u):
         if i == pertb_time/dt: 
             F[pertb_i][pertb_j] = u[0]
         FF.append(F)
-    
-<<<<<<< HEAD
+        
     return KF(FF)
 
-U = np.arange(-cost_X_limit, cost_X_limit, cost_step)
-cost_func = []
-for u in U:
-    cost_func.append(objective([u]))
-
-plt.style.use(niceplots.get_style())
-fig, ax = plt.subplots()
-ax.plot(U, cost_func, color='r')
-ax.set_xlim(-cost_X_limit, cost_X_limit)
-ax.set_xlabel(f'F[{pertb_i}][{pertb_j}]')
-ax.set_ylabel("Cost Function", rotation="horizontal", ha="right", va="center")
-# niceplots.adjust_spines(ax)
-# niceplots.label_line_ends(ax)
+if 1:
+    U = np.arange(-cost_X_limit, cost_X_limit, cost_step)
+    cost_func = []
+    for u in U:
+        cost_func.append(objective([u]))
+    
+    plt.style.use(niceplots.get_style())
+    fig, ax = plt.subplots(dpi=400)
+    ax.plot(U, cost_func, color='r')
+    ax.set_xlim(-cost_X_limit, cost_X_limit)
+    ax.set_xlabel(f'F[{pertb_i}][{pertb_j}]')
+    ax.set_ylabel("Cost", rotation="horizontal", ha="right", va="center")
+    # niceplots.adjust_spines(ax)
+    # niceplots.label_line_ends(ax)
  
 
+if 0:
+    u_bound = [[-cost_X_limit, cost_X_limit]]
+    u0 = [u_guess]
     
-
-        
-# u_bound = [[-cost_X_limit, cost_X_limit]]
-# u0 = [u_guess]
-
-# solution = minimize(objective, u0, method='SLSQP', bounds=u_bound)
-# print(solution)
-
-# plot = True
-# objective(solution.x)
-=======
-    return KF(FF)/(Tend/dt)
-
-# cost_func = []
-# U = np.arange(-cost_X_limit, cost_X_limit, cost_step)
-# F = np.array([[1, dt], [0, 1]])
-# for u in U:
-#     cost_func.append(objective([F[pertb_i][pertb_j]+u]))
-
-# plt.figure(dpi=150)
-# plt.plot(U, cost_func, color='r')
-
-# plt.show()
-# plot = False
-
-
-plot = True
-objective([-20])
-
-        
-# u_bound = [[-cost_X_limit, cost_X_limit]]
-# u0 = [u_guess]
-
-# solution = minimize(objective, u0, method='SLSQP', bounds=u_bound)
-# print(solution)
-
-# plot = True
-# objective(solution.x)
-
-
->>>>>>> 9634006d9015e80f7cd817ff937447d1ce6b9bfc
+    solution = minimize(objective, u0, method='SLSQP', bounds=u_bound)
+    print(solution)
+    
+    plot = True
+    objective(solution.x)
+    
+if 0:
+    plot = True
+    objective([-2])
