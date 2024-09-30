@@ -63,18 +63,36 @@ class Variable:
         return f"value: {self.value}, adjoint: {self.adjoint}"
     
     
+# x = Variable(1)
+# y = Variable(2)
+# z = Variable(3)
+
+# w1 = x + y
+# w2 = x*y
+# w3 = z*w1
+
+# v = w3 + w2 # xy + z(x+y)
+
+# v.backward(1) 
+
+# print(x)
+# print(y)
+# print(z)
+
 x = Variable(1)
 y = Variable(2)
 z = Variable(3)
 
-w1 = x + y
-w2 = x*y
-w3 = z*w1
+import numpy as np
 
-v = w3 + w2
+M1 = np.array([x, z])
+M2 = np.array([y, x+y])
+
+v = M1 @ M2.T
 
 v.backward(1) 
 
 print(x)
 print(y)
 print(z)
+
