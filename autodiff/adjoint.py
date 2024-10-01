@@ -18,7 +18,7 @@ def f(u,x):
 
 def solve(u0, x, tol=1e-6, max_iter=100):
 
-    u = np.array(u0, dtype=float)
+    u = jnp.array(u0, dtype=float)
 
     for i in range(max_iter):
 
@@ -28,7 +28,7 @@ def solve(u0, x, tol=1e-6, max_iter=100):
             print(f"Converged after {i} iterations.")
             return u
         
-        Jac = jax.jacfwd(r)
+        Jac = jax.jacfwd(r, argnums=0)
         J = Jac(u, x)
 
         du = jnp.linalg.solve(J, -res)
@@ -38,26 +38,44 @@ def solve(u0, x, tol=1e-6, max_iter=100):
         "Newton's method did not converge after the maximum number of iterations.")
 
 
-"Direct computations"
+" ========= Direct computations ========="
 # Compute Df/Du at u = [1, 2], x = 3
 
-u = [1.0, 1.0]
+u0 = [1.0, 1.0]
 x = 1.0
 
-dr_du = jax.jacrev(r, argnums=0)(u,x)
-dr_dx = jax.jacrev(r, argnums=1)(u,x)
+# u = solve(u0,x)
+# print(f"u={u} for x={x}")
 
-phi = np.linalg.solve(dr_du, dr_dx)
+# dr_du = jax.jacrev(r, argnums=0)(u,x)
+# dr_dx = jax.jacrev(r, argnums=1)(u,x)
 
-df_du = jax.jacrev(f, argnums=0)(u,x)
-df_dx = jax.jacrev(f, argnums=1 )(u,x)
+# phi = np.linalg.solve(dr_du, dr_dx)
 
-Df_Dx = df_dx - df_du @ phi
+# df_du = jax.jacrev(f, argnums=0)(u,x)
+# df_dx = jax.jacrev(f, argnums=1 )(u,x)
 
-print("Direct method:", Df_Dx)
+# Df_Dx = df_dx - df_du @ phi
 
-"Adjoint calculations"
-psi = np.linalg.solve(np.array(dr_du).T, df_du)
-Df_Dx = df_dx - psi.T @ dr_dx
+# print("Direct method:", Df_Dx)
 
-print("Adjoint method:", Df_Dx)
+# "======== Adjoint calculations ========="
+# psi = np.linalg.solve(np.array(dr_du).T, df_du)
+# Df_Dx = df_dx - psi.T @ dr_dx
+
+# print("Adjoint method:", Df_Dx)
+
+# "========== Finite difference =========="
+
+# dx = 0.001
+
+
+# Initial guess for [x, y]
+initial_guess = [1.0, 1.0]
+
+# Run Newton's method
+try:
+    solution = solve(initial_guess, x)
+    print(f"Solution: x = {solution[0]:.6f}, y = {solution[1]:.6f}")
+except ValueError as e:
+    print(e)
