@@ -1,84 +1,82 @@
 import numpy as np
-import matplotlib.pyplot as plt
+import jax
+import jax.numpy as jnp
 
-def system(x):
-    # Constants
-    g = 9.81  # Acceleration due to gravity (m/s^2)
-    thrust = 30.0  # Thrust force (N)
-    mass = 2.0  # Rocket mass (kg)
-    burn_time = 10.0  # Burn time of the engine (s)
-    dt = 1  # Time step (s)
+def residual(u, x, parameters):
     
-    # Initial conditions
-    true_velocity = 0.0  # True initial velocity (m/s)
-    true_altitude = 0.0  # True initial altitude (m)
-    measured_altitude = 0.0  # Initial measured altitude (m)
-    measurement_noise_std = 5.0
-    estimated_state = np.array([[0.0], [0.0]])  # Initial estimated state [altitude, velocity]
+    u0, dt  = parameters
     
-    F = np.array([[1, dt], [0, 1]])  # State transition matrix
-    H = np.array([[1, 0]])  # Observation matrix
-    f = np.array([[0.5*dt**2], [dt]])
+    res = jnp.zeros(u.shape)
+    uprev = jnp.array([[u0]])
+    F = jnp.log(x)
     
-    
-    # Lists to store time, true altitude, true velocity, measured altitude, estimated altitude, and estimated velocity for plotting
-    state = []
-    objective = []
-    
-    # Time loop
-    time = 0.0
-    while time <= 20.0:
+    for i in range(len(u)):
+        val = u[i] - uprev[0] - F*dt
+        res = res.at[i].set(val[0])
+        uprev.at[0,0].set(u[i])
         
-        # True state update
-        true_acceleration = thrust / mass - g 
-        guess_acceleration = 1.0 * true_acceleration + x #[int(time/dt)]
-        true_acceleration += np.random.normal(0, 5.0)
-        "Say the acceleration value has large uncertainity due to friction etc."
-    
-        true_velocity += true_acceleration * dt
-        true_altitude += true_velocity * dt + 0.5 * guess_acceleration * dt**2 
-    
-        # Simulate noisy measurement
-        measured_altitude = true_altitude + np.random.normal(0, measurement_noise_std)
-        
-        "=================================================================="         
-        estimated_state = F @ estimated_state + true_acceleration * f
-        
-        state.append(estimated_state)
-        objective.append(measured_altitude - H @ estimated_state)
-    
-        # Increment time
-        time += dt
-        
-    return state, np.linalg.norm(objective)
+    return res
 
-def residual(x, u):
     
-    dt = 1
+def solve(x, parameters):
     
-    F = np.array([[1, dt], [0, 1]])  # State transition matrix
-    f = np.array([[0.5*dt**2], [dt]])
+    global T
     
-    x_im1 = np.array([[0.0], [0.0]])
-    x_i = np.array([[0.0], [0.0]])
-    r = np.zeros([20, 2])
+    u0, dt  = parameters
+    u = np.zeros([int(T/dt),1])
     
-    for i in range(20):
-        x_i[0] = x[i][0]
-        x_i[0] = x[i][1]
-        res = x_i - x_im1 - dt * F @ x_im1 - u * f
-        r[i] = res.T
-        x_im1[0] = x[i][0]
-        x_im1[0] = x[i][1]
+    uprev = np.array([[u0]])
+    F = np.log(x)
+    
+    
+    for i in range(int(T/dt)):
+        u[i][0] = uprev[0][0] + F*dt
+        uprev[0][0] = u[i][0]
         
-    return r
+    return u
 
-x = np.tile([0.0, 0.0], (20,1))
-u = 5.19
-
-r = residual(x,u)
-print(r)
-
+def objective(u,x):
+    sum = 0.0
+    for i in range(len(u)):
+        sum += u[i]
         
+    return x*sum
+
+
+u = jnp.ones([10,])
+x = 10.0
+parameters = [10.0, 1.0] # u0, dt
+T = 10
+
+dr_du = jax.jacrev(residual, argnums=0)(u, x, parameters)
+dr_dx = jax.jacrev(residual, argnums=1)(u, x, parameters)
+
+phi = np.linalg.solve(dr_du, dr_dx)
+
+df_du = jax.jacrev(objective, argnums=0)(u,x)
+df_dx = jax.jacrev(objective, argnums=1 )(u,x)
+
+Df_Dx = df_dx - df_du @ phi
+
+print("Direct method:", Df_Dx)
+
+"======== Adjoint calculations ========="
+psi = np.linalg.solve(np.array(dr_du).T, df_du)
+Df_Dx = df_dx - psi.T @ dr_dx
+
+print("Adjoint method:", Df_Dx)
+
+
     
-    
+# u = jnp.ones([10,1])
+# x = 10.0
+# parameters = [10.0, 1.0] # u0, dt
+# T = 10
+
+# res = residual(u, x, parameters)
+# print(res)
+
+# u = solve(x, parameters)
+
+# res = residual(u, x, parameters)
+# print(res)
