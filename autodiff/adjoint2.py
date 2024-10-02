@@ -7,13 +7,12 @@ def residual(u, x, parameters):
     u0, dt  = parameters
     
     res = jnp.zeros(u.shape)
-    uprev = jnp.array([[u0]])
+    uprev = jnp.append(u0, u)
     F = jnp.log(x)
     
     for i in range(len(u)):
-        val = u[i] - uprev[0] - F*dt
-        res = res.at[i].set(val[0])
-        uprev.at[0,0].set(u[i])
+        val = u[i] - uprev[i] * (1 + F*dt)
+        res = res.at[i].set(val)
         
     return res
 
@@ -23,15 +22,15 @@ def solve(x, parameters):
     global T
     
     u0, dt  = parameters
-    u = np.zeros([int(T/dt),1])
+    u = np.zeros([int(T/dt),])
     
-    uprev = np.array([[u0]])
+    uprev = np.array([u0])
     F = np.log(x)
     
     
     for i in range(int(T/dt)):
-        u[i][0] = uprev[0][0] + F*dt
-        uprev[0][0] = u[i][0]
+        u[i] = uprev[0] * (1 + F*dt)
+        uprev[0] = u[i]
         
     return u
 
@@ -43,13 +42,16 @@ def objective(u,x):
     return x*sum
 
 
-u = jnp.ones([10,])
+# u = jnp.ones([10,])
 x = 10.0
-parameters = [10.0, 1.0] # u0, dt
-T = 10
+parameters = [10.0, 0.1] # u0, dt
+T = 1
+u = solve(x, parameters)
 
 dr_du = jax.jacrev(residual, argnums=0)(u, x, parameters)
 dr_dx = jax.jacrev(residual, argnums=1)(u, x, parameters)
+
+print(dr_du)
 
 phi = np.linalg.solve(dr_du, dr_dx)
 
@@ -60,23 +62,27 @@ Df_Dx = df_dx - df_du @ phi
 
 print("Direct method:", Df_Dx)
 
-"======== Adjoint calculations ========="
+"=========== Adjoint calculations ==========="
 psi = np.linalg.solve(np.array(dr_du).T, df_du)
 Df_Dx = df_dx - psi.T @ dr_dx
 
 print("Adjoint method:", Df_Dx)
 
+"============= Finite Difference ============"
+
+dx = 0.01
+u_pdx = solve(x+dx, parameters)
+u_mdx = solve(x-dx, parameters)
+
+obj_pdx = objective(u_pdx, x+dx)
+obj_mdx = objective(u_mdx, x-dx)
+
+Df_dx = (obj_pdx - obj_mdx)/(2*dx)
+print("Finite Difference", Df_Dx)
+
+"==========================================="
+"plotting the analytic vs adjoint derivative"
 
     
-# u = jnp.ones([10,1])
-# x = 10.0
-# parameters = [10.0, 1.0] # u0, dt
-# T = 10
-
-# res = residual(u, x, parameters)
-# print(res)
-
-# u = solve(x, parameters)
-
-# res = residual(u, x, parameters)
-# print(res)
+# for x in range(1,10,100):
+    
