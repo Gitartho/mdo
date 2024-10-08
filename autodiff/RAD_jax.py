@@ -43,6 +43,7 @@ import jax.numpy as jnp
 def func(xdict):
     
     x = xdict["vars"]
+
     
     y1 = 1/x[0]**2
     y2 = 1/x[1]**2

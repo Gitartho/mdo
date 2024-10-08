@@ -7,11 +7,12 @@ def residual(u, x, parameters):
     u0, dt  = parameters
     
     res = jnp.zeros(u.shape)
-    uprev = jnp.append(u0, u)
+    u = jnp.append(u0, u)
     F = jnp.log(x)
     
     for i in range(len(u)):
-        val = u[i] - uprev[i] * (1 + F*dt)
+        # val = u[i] - uprev[i] * (1 + F*dt)
+        val = u[i+1] - u[i] * (1 + F*dt)
         res = res.at[i].set(val)
         
     return res
