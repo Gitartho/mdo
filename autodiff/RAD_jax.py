@@ -24,7 +24,30 @@ import jax.numpy as jnp
 # print(f"Gradients via jacrev:{gradients}")
 
 # ============================================================================#
-# def func(x):
+import numpy as np 
+
+def func(x):
+    
+    y1 = 1/x[0]**2
+    y2 = 1/x[1]**2
+    
+    F = jnp.array([[y1, 0], [0, y2]])
+    G = jnp.linalg.inv(F)
+    G = np.reshape(G,(4,))
+    G = G @ G.T
+    
+    return G
+
+x = jnp.array([1.0, 2.0])
+
+gradient = jax.jacfwd(func, argnums=0)(x)
+print(gradient)
+
+# ============================================================================#
+# def func(xdict):
+    
+#     x = xdict["vars"]
+
     
 #     y1 = 1/x[0]**2
 #     y2 = 1/x[1]**2
@@ -32,31 +55,12 @@ import jax.numpy as jnp
 #     F = jnp.array([[y1, 0], [0, y2]])
 #     G = jnp.linalg.inv(F)
     
-#     return G.flatten()
+#     res_dict = {"G":G.flatten(), "xy":x[0]*x[1]}
+    
+#     return res_dict
 
-# x = jnp.array([1.0, 2.0])
+# x = {"vars":jnp.array([1.0, 2.0]), "filler":jnp.array([1.0, 2.0])}
+# # x = jnp.array([1.0, 2.0])
 
 # gradient = jax.jacfwd(func, argnums=0)(x)
-# print(gradient)
-
-# ============================================================================#
-def func(xdict):
-    
-    x = xdict["vars"]
-
-    
-    y1 = 1/x[0]**2
-    y2 = 1/x[1]**2
-    
-    F = jnp.array([[y1, 0], [0, y2]])
-    G = jnp.linalg.inv(F)
-    
-    res_dict = {"G":G.flatten(), "xy":x[0]*x[1]}
-    
-    return res_dict
-
-x = {"vars":jnp.array([1.0, 2.0]), "filler":jnp.array([1.0, 2.0])}
-# x = jnp.array([1.0, 2.0])
-
-gradient = jax.jacfwd(func, argnums=0)(x)
-print(gradient["G"]["vars"])
+# print(gradient["G"]["vars"])
