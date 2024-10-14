@@ -28,13 +28,16 @@ import numpy as np
 
 def func(x):
     
-    y1 = 1/x[0]**2
-    y2 = 1/x[1]**2
+    # y1 = 1/x[0]**2
+    # y2 = 1/x[1]**2
     
-    F = jnp.array([[y1, 0], [0, y2]])
-    G = jnp.linalg.inv(F)
-    G = np.reshape(G,(4,))
-    G = G @ G.T
+    # F = jnp.array([[y1, 0], [0, y2]])
+    # G = jnp.linalg.inv(F)
+    # G = np.reshape(G,(4,))
+    G = jnp.zeros((2,2))
+    
+    G = G.at[0].set(x[0])
+    G = G.at[1].set(x[0])
     
     return G
 
