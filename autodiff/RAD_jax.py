@@ -24,27 +24,27 @@ import jax.numpy as jnp
 # print(f"Gradients via jacrev:{gradients}")
 
 # ============================================================================#
-import numpy as np 
+# import numpy as np 
 
-def func(x):
+# def func(x):
     
-    # y1 = 1/x[0]**2
-    # y2 = 1/x[1]**2
+#     # y1 = 1/x[0]**2
+#     # y2 = 1/x[1]**2
     
-    # F = jnp.array([[y1, 0], [0, y2]])
-    # G = jnp.linalg.inv(F)
-    # G = np.reshape(G,(4,))
-    G = jnp.zeros((2,2))
+#     # F = jnp.array([[y1, 0], [0, y2]])
+#     # G = jnp.linalg.inv(F)
+#     # G = np.reshape(G,(4,))
+#     G = jnp.zeros((2,2))
     
-    G = G.at[0].set(x[0])
-    G = G.at[1].set(x[0])
+#     G = G.at[0].set(x[0])
+#     G = G.at[1].set(x[0])
     
-    return G
+#     return G
 
-x = jnp.array([1.0, 2.0])
+# x = jnp.array([1.0, 2.0])
 
-gradient = jax.jacfwd(func, argnums=0)(x)
-print(gradient)
+# gradient = jax.jacfwd(func, argnums=0)(x)
+# print(gradient)
 
 # ============================================================================#
 # def func(xdict):
@@ -67,3 +67,16 @@ print(gradient)
 
 # gradient = jax.jacfwd(func, argnums=0)(x)
 # print(gradient["G"]["vars"])
+
+# =============================================================================
+import numpy as np 
+
+def func(x):
+    
+    A = jnp.array([[0, x[0]], [x[1], 0]])
+    
+
+x = jnp.array([1.0, 2.0])
+
+gradient = jax.jacrev(func, argnums=0)(x)
+print(gradient)

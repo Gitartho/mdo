@@ -85,14 +85,15 @@ z = Variable(3)
 
 import numpy as np
 
-M1 = np.array([x, z])
-M2 = np.array([y, x+y])
+# M1 = np.array([x, z])
+# M2 = np.array([y, x+y])
 
-v = M1 @ M2.T
+# v = M1 @ M2.T
+v = x*x
 
 v.backward(1) 
 
 print(x)
-print(y)
-print(z)
+# print(y)
+# print(z)
 
